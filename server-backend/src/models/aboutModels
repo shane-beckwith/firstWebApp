@@ -1,0 +1,438 @@
+# Models Directory - README
+
+## What Are Models?
+
+**Models** are TypeScript interfaces that define the **structure** and **shape** of your data. Think of them as blueprints or contracts that specify what fields an object should have and what types those fields should be.
+
+---
+
+## Why Do We Need Models?
+
+### Without Models (Chaos):
+```typescript
+// Everyone does it differently
+const review1 = { pizza: "Margherita", score: 5 }
+const review2 = { name: "Pepperoni", rating: 4, user: "John" }
+const review3 = { food: "Hawaiian", stars: 3, comment: "Good" }
+
+// Which field is the pizza name? pizza? name? food?
+// Which field is the rating? score? rating? stars?
+```
+
+### With Models (Order):
+```typescript
+interface Review {
+  pizzaName: string;
+  rating: number;
+  comment: string;
+  reviewer: string;
+}
+
+// Everyone follows the same structure
+const review1: Review = { pizzaName: "Margherita", rating: 5, comment: "Great!", reviewer: "John" }
+const review2: Review = { pizzaName: "Pepperoni", rating: 4, comment: "Good", reviewer: "Jane" }
+```
+
+---
+
+## Real-World Analogy
+
+**Models are like standardized forms:**
+
+Imagine a pizza shop with a review form:
+- Name of Pizza: _____________
+- Rating (1-5): ___
+- Your Review: _____________
+- Your Name: _____________
+
+Everyone fills out the **same form** with the **same fields** in the **same order**. That's what a model does for your code!
+
+---
+
+## Key Concepts
+
+### 1. Interfaces vs Types
+```typescript
+// Interface (what we use)
+interface Review {
+  pizzaName: string;
+}
+
+// Type (alternative, works similarly)
+type Review = {
+  pizzaName: string;
+}
+```
+
+**We use interfaces because:**
+- Clearer intent (describes object shape)
+- Better error messages
+- Convention in TypeScript
+
+---
+
+### 2. Required vs Optional Fields
+
+```typescript
+interface Review {
+  pizzaName: string;      // REQUIRED - no ? mark
+  restaurant?: string;    // OPTIONAL - has ? mark
+}
+
+// Valid (restaurant is optional)
+const review1: Review = { pizzaName: "Margherita" }
+
+// Valid (restaurant provided)
+const review2: Review = { pizzaName: "Pepperoni", restaurant: "Joe's" }
+
+// Invalid (pizzaName is required)
+const review3: Review = { restaurant: "Joe's" }  // ❌ ERROR
+```
+
+---
+
+### 3. TypeScript Data Types
+
+```typescript
+interface Review {
+  // String - text data
+  pizzaName: string;        // "Margherita", "Pepperoni"
+
+  // Number - numeric data
+  rating: number;           // 5, 4.5, 3
+
+  // Boolean - true/false
+  isVerified: boolean;      // true, false
+
+  // Date - date/time
+  createdAt: Date;          // 2025-11-06T12:00:00Z
+
+  // Array - list of items
+  toppings: string[];       // ["cheese", "pepperoni", "mushrooms"]
+
+  // Object - nested structure
+  location: {
+    city: string;
+    state: string;
+  }
+}
+```
+
+---
+
+## How Models Work in Our App
+
+### The Flow:
+```
+1. User submits review form (Frontend)
+   ↓
+2. Data sent to backend as JSON
+   ↓
+3. Controller checks if data matches Review model
+   ↓
+4. DAO saves to MongoDB (MongoDB doesn't care about types)
+   ↓
+5. When we read from MongoDB, we treat it as Review type
+```
+
+---
+
+## Example: Review Model Explained
+
+```typescript
+export interface Review {
+    // _id: Unique identifier
+    // MongoDB creates this automatically
+    // Optional because it doesn't exist until saved to database
+    _id?: string;
+
+    // pizzaName: Name of the pizza
+    // Required field (no ?)
+    // Must be a string (text)
+    pizzaName: string;
+
+    // rating: Star rating
+    // Required field
+    // Must be a number (we validate 1-5 in controller)
+    rating: number;
+
+    // comment: Review text
+    // Required field
+    // The actual review content
+    comment: string;
+
+    // reviewer: Who wrote the review
+    // Required field
+    // Person's name
+    reviewer: string;
+
+    // restaurant: Which pizza place
+    // Optional field (has ?)
+    // Not everyone specifies which restaurant
+    restaurant?: string;
+
+    // createdAt: When review was created
+    // Optional because DAO sets this automatically
+    // Timestamp that never changes
+    createdAt?: Date;
+
+    // updatedAt: When review was last edited
+    // Optional because DAO sets this automatically
+    // Timestamp that updates on every edit
+    updatedAt?: Date;
+}
+```
+
+---
+
+## Common Patterns
+
+### 1. Base Interface with Extensions
+```typescript
+// Base interface with common fields
+interface BaseModel {
+  _id?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// Specific models extend the base
+interface Review extends BaseModel {
+  pizzaName: string;
+  rating: number;
+  comment: string;
+}
+
+interface User extends BaseModel {
+  username: string;
+  email: string;
+}
+```
+
+---
+
+### 2. Validation Types
+```typescript
+// Use type unions for strict validation
+interface Review {
+  pizzaName: string;
+  rating: 1 | 2 | 3 | 4 | 5;  // Only these exact numbers allowed
+  status: "pending" | "approved" | "rejected";  // Only these strings allowed
+}
+```
+
+---
+
+### 3. Partial Types for Updates
+```typescript
+// When updating, all fields are optional
+type UpdateReview = Partial<Review>;
+
+// This allows updating just one field
+const update: UpdateReview = { rating: 5 };  // Only update rating
+```
+
+---
+
+## Benefits of Using Models
+
+### 1. Type Safety
+```typescript
+const review: Review = {
+  pizzaName: "Margherita",
+  rating: "five"  // ❌ ERROR: rating must be number, not string
+}
+```
+
+### 2. Autocomplete
+When you type `review.`, your IDE shows all available fields:
+- `review.pizzaName`
+- `review.rating`
+- `review.comment`
+- etc.
+
+### 3. Catch Errors Early
+```typescript
+function displayReview(review: Review) {
+  console.log(review.pizzaName);  // ✅ Works
+  console.log(review.pizzaNam);   // ❌ ERROR: typo caught immediately
+}
+```
+
+### 4. Documentation
+Models serve as documentation - you can see exactly what data structure looks like without reading code.
+
+---
+
+## When to Create a New Model
+
+Create a new model when you have a distinct data entity:
+
+**✅ Create separate models for:**
+- Reviews (review data)
+- Users (user accounts)
+- Pizzas (pizza menu items)
+- Restaurants (restaurant information)
+
+**❌ Don't create models for:**
+- Temporary data that doesn't persist
+- API response wrappers
+- Utility objects
+
+---
+
+## Naming Conventions
+
+### File Names:
+- `Review.ts` - Singular, PascalCase
+- `User.ts` - Not `Users.ts`
+- `PizzaOrder.ts` - Multiple words in PascalCase
+
+### Interface Names:
+```typescript
+// ✅ Good
+export interface Review { }
+export interface User { }
+export interface PizzaOrder { }
+
+// ❌ Bad
+export interface review { }        // lowercase
+export interface IReview { }       // old convention (I prefix)
+export interface ReviewInterface { } // redundant suffix
+```
+
+---
+
+## Common Mistakes to Avoid
+
+### 1. Forgetting to Export
+```typescript
+// ❌ Won't be accessible from other files
+interface Review {
+  pizzaName: string;
+}
+
+// ✅ Accessible from other files
+export interface Review {
+  pizzaName: string;
+}
+```
+
+---
+
+### 2. Using 'any' Type
+```typescript
+// ❌ Defeats purpose of TypeScript
+interface Review {
+  data: any;  // Could be anything!
+}
+
+// ✅ Be specific
+interface Review {
+  pizzaName: string;
+  rating: number;
+}
+```
+
+---
+
+### 3. Not Matching Backend Structure
+```typescript
+// If MongoDB has "pizza_name" but you use "pizzaName"
+// You'll need to transform data between frontend and backend
+// Better to stay consistent!
+```
+
+---
+
+## Testing with Models
+
+```typescript
+// You can use models in tests
+import { Review } from './models/Review';
+
+const mockReview: Review = {
+  pizzaName: "Test Pizza",
+  rating: 5,
+  comment: "Test comment",
+  reviewer: "Test User"
+};
+
+// Now mockReview has type checking
+```
+
+---
+
+## Relationship to Other Layers
+
+### Models vs Controllers
+- **Models** = Define data structure
+- **Controllers** = Define business logic
+
+### Models vs DAOs
+- **Models** = Define data structure
+- **DAOs** = Define database operations
+
+### Models vs Routes
+- **Models** = Define data structure
+- **Routes** = Define API endpoints
+
+---
+
+## Quick Reference
+
+### Creating a Model:
+```typescript
+// 1. Create file: src/models/ModelName.ts
+// 2. Define interface:
+export interface ModelName {
+  field1: string;
+  field2: number;
+  field3?: boolean;
+}
+// 3. Use in other files:
+import { ModelName } from './models/ModelName';
+```
+
+### Using a Model:
+```typescript
+import { Review } from './models/Review';
+
+// As a type annotation
+function createReview(review: Review) { }
+
+// For variable declaration
+const myReview: Review = { ... };
+
+// For function return type
+function getReview(): Review { ... }
+```
+
+---
+
+## Summary
+
+**Models are blueprints for your data that provide:**
+- ✅ Structure and consistency
+- ✅ Type safety and error prevention
+- ✅ Better IDE support (autocomplete)
+- ✅ Self-documenting code
+- ✅ Easier refactoring
+
+**Remember:**
+- Models define **WHAT** the data looks like
+- Controllers define **WHAT** to do with the data
+- DAOs define **HOW** to store/retrieve the data
+- Routes define **WHERE** to access the data
+
+---
+
+## Further Reading
+
+- [TypeScript Handbook - Interfaces](https://www.typescriptlang.org/docs/handbook/interfaces.html)
+- [TypeScript Handbook - Type vs Interface](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#differences-between-type-aliases-and-interfaces)
+
+---
+
+**Last Updated:** November 2025
+**Project:** Pizza Review System

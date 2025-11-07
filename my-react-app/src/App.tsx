@@ -2,6 +2,7 @@ import {useEffect, useState} from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
+import Name from './PrintName';
 
 
 function App() {
@@ -73,6 +74,7 @@ function App() {
                     </a>
                 </div>
                 <h1>Vite + React</h1>
+                <Name/>
                 <div className="card">
                     <div className="redBack"><h1>{jokeSetup}</h1></div>
                     <div className="blueBack"><h1>{jokePunchline}</h1></div>
