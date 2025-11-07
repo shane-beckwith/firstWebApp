@@ -1,3 +1,14 @@
+/*
+* CRUD OPS
+* Create
+* Read
+* Read One
+* Update
+* Delete
+*
+* */
+
+
 // Import MongoDB types
 import { MongoClient, Collection, ObjectId } from "mongodb"
 
@@ -326,29 +337,55 @@ if (result.success) {
     }
 
     // ============================================
-    // GET REVIEW BY ID
+    // UPDATE REVIEW
     // ============================================
     static async updateReview(id: string, updates: any) {
         try {
-            const review = await reviews.findOne({_id: new ObjectId(id)})
+            // Step 1: Add updated timestamp
+            // Automatically track when this review was last modified
+            updates.updatedAt = new Date()
 
+            // Step 2: Update the document
+            // updateOne() = update one document
+            // First parameter: which document to update (find by _id)
+            // Second parameter: what to update ($set operator)
+            const result = await reviews.updateOne(
+                { _id: new ObjectId(id) },    // Find document with this ID
+                { $set: updates }              // Update these fields
+            )
 
+            // Step 3: Return success status
+            // modifiedCount = how many documents were changed
+            // If 0, either ID doesn't exist or nothing changed
+            return { success: result.modifiedCount > 0 }
 
-            // Step 2: Insert the document into the collection
-            // insertOne() = add one document to the database
-            const result = await reviews.insertOne(reviewDoc)
-
-            // Step 3: Return success with the new ID
-            return {
-                success: true,              // Indicates success
-                id: result.insertedId       // MongoDB's auto-generated ID
-            }
         } catch (e) {
-            console.error(`Unable to get review: ${e}`)
-            return null
+            console.error(`Unable to update review: ${e}`)
+            return { error: e }
         }
     }
 
 
+    // ============================================
+    // DELETE REVIEW
+    // ============================================
+    static async deleteReview(id: string) {
+        try {
+            // Step 1: Delete the document
+            // deleteOne() = remove one document from collection
+            // Parameter: which document to delete (find by _id)
+            const result = await reviews.deleteOne({
+                _id: new ObjectId(id)
+            })
 
+            // Step 2: Return success status
+            // deletedCount = how many documents were removed
+            // Should be 1 if found and deleted, 0 if not found
+            return { success: result.deletedCount > 0 }
+
+        } catch (e) {
+            console.error(`Unable to delete review: ${e}`)
+            return { error: e }
+        }
+    }
 }

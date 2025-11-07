@@ -1,39 +1,55 @@
 // ============================================
 // REVIEWS ROUTES
 // ============================================
-// This file defines all routes related to reviews
-// Routes are mounted at /api/v1/reviews in server.ts
+// This file defines all the URL endpoints for reviews
+// Each route maps a URL + HTTP method to a controller method
 
 import express from "express"
-import { Request, Response } from "express"
+import ReviewsController from "../controllers/reviewsController"
 
-// Create a router
-// Router is like a mini Express app that handles a group of routes
+// ============================================
+// CREATE ROUTER
+// ============================================
+// Router is like a mini Express app
+// It groups related routes together
 const router = express.Router()
 
 // ============================================
-// ROUTES
+// DEFINE ROUTES
 // ============================================
 
-// GET /api/v1/reviews
-// Get all reviews
-router.route("/").get((req: Request, res: Response) => {
-    // TODO: Replace with actual database query
-    // For now, just send test response
-    res.json({
-        message: "Reviews endpoint working!",
-        reviews: []
-    })
-})
+// Route 1: GET /api/v1/reviews
+// Purpose: Get all reviews
+// Method: GET
+// Controller: ReviewsController.getReviews
+router.route("/").get(ReviewsController.getReviews)
 
-// You'll add more routes here:
-// POST /api/v1/reviews - Create new review
-// GET /api/v1/reviews/:id - Get single review
-// PUT /api/v1/reviews/:id - Update review
-// DELETE /api/v1/reviews/:id - Delete review
+// Route 2: POST /api/v1/reviews
+// Purpose: Create a new review
+// Method: POST
+// Controller: ReviewsController.createReview
+router.route("/").post(ReviewsController.createReview)
+
+// Route 3: GET /api/v1/reviews/:id
+// Purpose: Get a single review by ID
+// Method: GET
+// Controller: ReviewsController.getReviewById
+// :id = URL parameter (e.g., /api/v1/reviews/507f1f77...)
+router.route("/:id").get(ReviewsController.getReviewById)
+
+// Route 4: PUT /api/v1/reviews/:id
+// Purpose: Update a review
+// Method: PUT
+// Controller: ReviewsController.updateReview
+router.route("/:id").put(ReviewsController.updateReview)
+
+// Route 5: DELETE /api/v1/reviews/:id
+// Purpose: Delete a review
+// Method: DELETE
+// Controller: ReviewsController.deleteReview
+router.route("/:id").delete(ReviewsController.deleteReview)
 
 // ============================================
 // EXPORT ROUTER
 // ============================================
-
 export default router
