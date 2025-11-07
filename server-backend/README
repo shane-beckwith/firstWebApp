@@ -1,0 +1,60 @@
+## **Your Complete Backend Architecture**
+```
+backend/
+  src/
+    models/
+      Review.ts              ← Defines data structure
+
+    dao/
+      reviewsDAO.ts          ← Database operations
+                               (5 methods: CRUD)
+
+    controllers/
+      reviewsController.ts   ← Business logic & validation
+                               (5 methods: CRUD)
+
+    routes/
+      reviews.route.ts       ← URL mappings
+                               (5 routes: CRUD)
+
+    server.ts                ← App configuration
+    index.ts                 ← Server startup
+```
+
+---
+
+## **The Complete Request Flow**
+
+Let's trace what happens when someone creates a review:
+```
+1. User clicks "Submit Review" in frontend
+   ↓
+2. Frontend sends:
+   POST http://localhost:5001/api/v1/reviews
+   Body: { pizzaName: "Margherita", rating: 5, ... }
+   ↓
+3. Express receives the request
+   ↓
+4. server.ts middleware runs (CORS, JSON parser)
+   ↓
+5. server.ts routes to: app.use("/api/v1/reviews", reviewsRoutes)
+   ↓
+6. reviews.route.ts matches: router.route("/").post(ReviewsController.createReview)
+   ↓
+7. ReviewsController.createReview() runs:
+   - Validates data (is rating 1-5?)
+   - Calls ReviewsDAO.addReview()
+   ↓
+8. ReviewsDAO.addReview() runs:
+   - Creates document object
+   - Calls reviews.insertOne()
+   ↓
+9. MongoDB saves the review and returns ID
+   ↓
+10. DAO returns { success: true, id: "..." }
+    ↓
+11. Controller returns res.status(201).json({ success: true, ... })
+    ↓
+12. Express sends JSON response to frontend
+    ↓
+13. Frontend receives response and updates UI
